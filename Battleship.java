@@ -5,6 +5,7 @@
  * 
  * A basic version of Battleship where you guess the location of your opponents boats until you win by sinking them all.
  */
+
 import java.util.Arrays;
 import java.util.Scanner;
 public class Battleship 
@@ -52,7 +53,7 @@ public class Battleship
             oppBoard[row][col] = 0;
             shotsFired[row][col] = 'X';
             int shipHP = 0;
-            System.out.println((char)(row + 'A') + "" + (col + 1) + " is a hit");
+            System.out.println((row + 'A') + "" + (col + 1) + " is a hit");
 
             //Checks for remaining values of shipSize to add to shipHP
             for(int i = 0; i < oppBoard.length; i++)

@@ -1,7 +1,15 @@
+import java.util.Arrays;
+
 public class BattleShipBot {
+    
     public static void main(String[] args)
     {
-        System.out.println(0%2);
+        char[][] testBoard = new char[10][10];
+        for(char[] row : testBoard)
+        {
+            Arrays.fill(row, '.');
+        }
+        probMap(testBoard);
     }
 
     public static String makeGuess(char[][] guesses)
@@ -16,26 +24,52 @@ public class BattleShipBot {
             {
                 if(guesses[i][j] == 'X')
                 {
-                    target = true;
-                    row = 'A';
-                    col = j;
+                    return targetShot(guesses, i, j);
                 }
             }
         }
-        if(target)
-        {
-            targetShot(guesses, row, col);
-        }
-        else
-        {
-
-        } 
-        
-        return "";
+        return huntingShot(guesses);
     }
+
+    /*Builds a probability density map of possible ship positions
+     * 
+     * 
+     */
     private static void probMap(char[][] guesses)
     {
-
+        int[] ships = {2, 3, 3, 4, 5};
+        int[][] distribution = new int[10][10];
+        for(int ship : ships)
+        {
+            //check each row for space to fit a ship and increment the value of the cells that a ship can occupy. Does this for each ship size and builds a probability distrobution.
+            for(int i = 0; i < guesses.length; i++)
+            {
+                //row
+                for(int j = 0; j < guesses[i].length - ship; j++)
+                {
+                    boolean fits = false;
+                    //begin cell
+                    if(guesses[i][j] == '.')
+                    {
+                        for(int k = 1; k <= ship; k++)
+                        {
+                            if(guesses[i][j+k] == '.' || guesses[i][j+k] == 'X')
+                            {
+                                fits = true;
+                            }
+                        }
+                        if(fits)
+                        {
+                            for(int e = 0; e <= ship; e++)
+                            {
+                                distribution[i][j+e]++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        showBoard(distribution);
     }
     private static void getMinShipSize(char[][] guesses)
     {
@@ -50,9 +84,10 @@ public class BattleShipBot {
     }
     private static String huntingShot(char[][] guesses)
     {
+        String guess = "";
         char row = 'A';
         int col = 1;
-        //Check every odd pairity cell for hits
+        //Check every odd parity cell for hits
         for(int i = 0; i < guesses.length; i++)
         {
             for(int j = 0; j < guesses[i].length; j += 2)
@@ -62,13 +97,46 @@ public class BattleShipBot {
                 {
                     row += i;
                     col +=j;
-                    return (char)row + col;
+                    guess += (char)row + col;
+                    return guess;
                 }
             }
         }
+        return guess;
     }
-    private static void targetShot(char[][] guesses, int row, int col)
+    private static String targetShot(char[][] guesses, int row, int col)
     {
 
+        return "B5";
+    }
+    public static void showBoard(int[][] probMap)
+    {
+        System.out.println("    1   2   3   4   5   6   7   8   9   10");
+        System.out.println("   ___ ___ ___ ___ ___ ___ ___ ___ ___ ____");
+        
+        for(int i = 0; i < probMap.length; i++)
+        {
+            String line = (char)(i + 'A') + " |";
+            for(int j = 0; j < probMap[i].length; j++)
+            {
+                line = line + "_" + probMap[i][j] + "_|";
+            }
+            System.out.println(line);
+        }
+    }
+    public static void showBoard(char[][] shotsFired)
+    {
+        System.out.println("    1   2   3   4   5   6   7   8   9   10");
+        System.out.println("   ___ ___ ___ ___ ___ ___ ___ ___ ___ ____");
+        
+        for(int i = 0; i < shotsFired.length; i++)
+        {
+            String line = (char)(i + 'A') + " |";
+            for(int j = 0; j < shotsFired[i].length; j++)
+            {
+                line = line + "_" + shotsFired[i][j] + "_|";
+            }
+            System.out.println(line);
+        }
     }
 }

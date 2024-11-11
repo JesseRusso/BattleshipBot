@@ -9,6 +9,9 @@ public class BattleShipBot {
         {
             Arrays.fill(row, '.');
         }
+        testBoard[0][1] = 'X';
+        testBoard[0][2] = 'X';
+        testBoard[0][3] = '3';
         probMap(testBoard);
     }
 
@@ -47,22 +50,51 @@ public class BattleShipBot {
                 //row
                 for(int j = 0; j < guesses[i].length - ship; j++)
                 {
-                    boolean fits = false;
                     //begin cell
                     if(guesses[i][j] == '.')
                     {
+                        //boolean fits = true;
+                        int freeCellCount = 0;
                         for(int k = 1; k <= ship; k++)
                         {
                             if(guesses[i][j+k] == '.' || guesses[i][j+k] == 'X')
                             {
-                                fits = true;
+                                freeCellCount++;
                             }
                         }
-                        if(fits)
+                        if(freeCellCount == ship)
                         {
                             for(int e = 0; e <= ship; e++)
                             {
                                 distribution[i][j+e]++;
+                            }
+                        }
+                    }
+                }
+            }
+            //Same as above but for columns now
+            for(int i = 0; i < guesses.length-ship; i++)
+            {
+                //row
+                for(int j = 0; j < guesses[i].length; j++)
+                {
+                    //begin cell
+                    if(guesses[i][j] == '.')
+                    {
+                        int freeCellCount = 0;
+                        //boolean fits = false;
+                        for(int k = 1; k <= ship; k++)
+                        {
+                            if(guesses[i+k][j] == '.' || guesses[i+k][j] == 'X')
+                            {
+                                freeCellCount++;
+                            }
+                        }
+                        if(freeCellCount == ship)
+                        {
+                            for(int e = 0; e <= ship; e++)
+                            {
+                                distribution[i+e][j]++;
                             }
                         }
                     }

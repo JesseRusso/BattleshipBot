@@ -9,9 +9,13 @@ public class BattleShipBot {
         {
             Arrays.fill(row, '.');
         }
-        testBoard[0][1] = 'X';
+/*         testBoard[0][1] = '3';
+        testBoard[1][1] = '3';
+        testBoard[2][1] = '3';
+
+        testBoard[1][7] = '3';*/
         testBoard[0][2] = 'X';
-        testBoard[0][3] = '3';
+        testBoard[3][3] = 'X';
         probMap(testBoard);
     }
 
@@ -47,55 +51,41 @@ public class BattleShipBot {
             //check each row for space to fit a ship and increment the value of the cells that a ship can occupy. Does this for each ship size and builds a probability distrobution.
             for(int i = 0; i < guesses.length; i++)
             {
-                //row
-                for(int j = 0; j < guesses[i].length - ship; j++)
+                //loops over each cell in a row
+                for(int j = 0; j <= guesses[i].length - ship; j++)
                 {
-                    //begin cell
-                    if(guesses[i][j] == '.')
+                    char startCell = guesses[i][j];
+                    boolean[] fitsHits = fitsRow(guesses, i, j, ship);
+                    if(startCell == 'X' || startCell == '.' && fitsHits[0])
                     {
-                        //boolean fits = true;
-                        int freeCellCount = 0;
-                        for(int k = 1; k <= ship; k++)
+                        for(int l = 0; l < ship; l++)
                         {
-                            if(guesses[i][j+k] == '.' || guesses[i][j+k] == 'X')
-                            {
-                                freeCellCount++;
-                            }
+                            distribution[i][j + l]++;
                         }
-                        if(freeCellCount == ship)
+                        if(fitsHits[1])
                         {
-                            for(int e = 0; e <= ship; e++)
-                            {
-                                distribution[i][j+e]++;
-                            }
+                            hitRow(guesses, distribution, i, j, ship);
                         }
                     }
                 }
             }
             //Same as above but for columns now
-            for(int i = 0; i < guesses.length-ship; i++)
+            for(int i = 0; i <= guesses.length-ship; i++)
             {
-                //row
+                //col
                 for(int j = 0; j < guesses[i].length; j++)
                 {
-                    //begin cell
-                    if(guesses[i][j] == '.')
+                    char startCell = guesses[i][j];
+                    boolean[] fitsHits = fitsCol(guesses, i, j, ship);
+                    if(startCell == 'X' || startCell == '.' && fitsHits[0])
                     {
-                        int freeCellCount = 0;
-                        //boolean fits = false;
-                        for(int k = 1; k <= ship; k++)
+                        for(int l = 0; l < ship; l++)
                         {
-                            if(guesses[i+k][j] == '.' || guesses[i+k][j] == 'X')
-                            {
-                                freeCellCount++;
-                            }
+                            distribution[i + l][j]++;
                         }
-                        if(freeCellCount == ship)
+                        if(fitsHits[1])
                         {
-                            for(int e = 0; e <= ship; e++)
-                            {
-                                distribution[i+e][j]++;
-                            }
+                            hitCol(guesses, distribution, i, j, ship);
                         }
                     }
                 }
@@ -107,12 +97,98 @@ public class BattleShipBot {
     {
 
     }
-    private static void parityCheck(char[][] guesses)
-    {
-        for(int i = 0; i < guesses.length; i++)
-        {
 
+    private static void hitRow(char[][] guesses, int[][] map, int row, int col, int shipSize)
+    {
+        final int FACTOR = 2;
+        for(int j = 0; j < shipSize; j++)
+        {
+            if(guesses[row][col + j] == 'X')
+            {
+                if(col + j == 0)
+                {
+                    map[row][col + 1] *= FACTOR;
+                }
+                else if(col + j > guesses[row].length)
+                {
+                    map[row][col + j - 1] *= FACTOR;
+                }
+                else
+                {
+                    map[row][col + j - 1] *= FACTOR;
+                    map[row][col + j + 1] *= FACTOR;
+                }
+                map[row][col + j] = 0;
+            }
         }
+    }
+    private static void hitCol(char[][] guesses, int[][] map, int row, int col, int shipSize)
+    {
+        final int FACTOR = 2;
+        for(int j = 0; j < shipSize; j++)
+        {
+            if(guesses[row + j][col] == 'X')
+            {
+                if(row + j == 0)
+                {
+                    map[row + 1][col] *= FACTOR;
+                }
+                else if(row + j > guesses[row].length)
+                {
+                    map[row + j - 1][col] *= FACTOR;
+                }
+                else
+                {
+                    map[row + j - 1][col] *= FACTOR;
+                    map[row + j + 1][col] *= FACTOR;
+                }
+                map[row + j][col] = 0;
+            }
+        }
+    }
+    /*Checks if a ship of length shipSize will fit in a row starting from guesses[i][j] 
+     *Returns a boolean array with [0] == true if there is room for a ship and [1] == true if there is a hit in the path 
+     */
+    private static boolean[] fitsRow(char[][] guesses, int row, int col, int shipSize)
+    {   
+            int freeCellCount = 0;
+            boolean hitsNearby = false;
+            for(int k = 0; k < shipSize; k++)
+            {
+                char cellToCheck = guesses[row][col + k];
+                if(cellToCheck == '.')
+                {
+                    freeCellCount++;
+                }
+                else if(cellToCheck == 'X')
+                {
+                    hitsNearby = true;
+                    freeCellCount++;
+                }
+            }
+            return new boolean[] {freeCellCount == shipSize, hitsNearby};
+    }
+    /*Checks if a ship of length shipSize will fit in a column starting from guesses[i][j] 
+     *Returns a boolean array with [0] == true if there is room for a ship and [1] == true if there is a hit in the path 
+     */
+    private static boolean[] fitsCol(char[][] guesses, int row, int col, int shipSize)
+    {
+        int freeCellCount = 0;
+        boolean hitsNearby = false;
+        for(int k = 0; k < shipSize; k++)
+        {
+            char cellToCheck = guesses[row + k][col];
+            if(cellToCheck == '.')
+            {
+                freeCellCount++;
+            }
+            else if(cellToCheck == 'X')
+            {
+                freeCellCount++;
+                hitsNearby = true;
+            }
+        }
+        return new boolean[] {freeCellCount == shipSize, hitsNearby};
     }
     private static String huntingShot(char[][] guesses)
     {

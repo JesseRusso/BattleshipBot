@@ -9,40 +9,37 @@ public class BattleShipBot {
         {
             Arrays.fill(row, '.');
         }
-/*         testBoard[0][1] = '3';
-        testBoard[1][1] = '3';
-        testBoard[2][1] = '3';
-
-        testBoard[1][7] = '3';*/
-        testBoard[0][2] = 'X';
-        testBoard[3][3] = 'X';
-        probMap(testBoard);
     }
 
     public static String makeGuess(char[][] guesses)
     {
-        boolean target = false;
-        int row;
-        int col;
-        String guess;
-        for(int i = 0; i < guesses.length; i++)
+        int[][] map = probMap(guesses);
+        int row = 0; 
+        int col = 0; 
+        int maxValue = 0;
+        for(int i = 0; i < map.length; i++)
         {
-            for(int j = 0; j < guesses[i].length; j ++)
+            for(int j = 0; j < map[i].length; j++)
             {
-                if(guesses[i][j] == 'X')
+                if(map[i][j] > maxValue)
                 {
-                    return targetShot(guesses, i, j);
+                    maxValue = map[i][j];
+                    row = i;
+                    col = j;
                 }
             }
         }
-        return huntingShot(guesses);
+        String guess = (char)(row + 'A') + "" + (int)(col+1);
+        //System.out.println("2% plz");
+        //showBoard(map);
+        return guess;
     }
 
     /*Builds a probability density map of possible ship positions
      * 
      * 
      */
-    private static void probMap(char[][] guesses)
+    private static int[][] probMap(char[][] guesses)
     {
         int[] ships = {2, 3, 3, 4, 5};
         int[][] distribution = new int[10][10];
@@ -90,14 +87,30 @@ public class BattleShipBot {
                     }
                 }
             }
+            //Clear the map of values where there are misses
+            for(int i = 0; i < guesses.length; i++)
+            {
+                for(int j = 0; j < guesses[i].length; j++)
+                {
+                    if(guesses[i][j] == 'O')
+                    {
+                        distribution[i][j] = 0;
+                    }
+                }
+            }
+
         }
-        showBoard(distribution);
+        return distribution;
     }
     private static void getMinShipSize(char[][] guesses)
     {
-
+        int threeCount = 0;
+        for(int i = 2; i < 6; i++)
+        {
+            
+        }
     }
-
+    //Weights the cells around a hit in a row by FACTOR
     private static void hitRow(char[][] guesses, int[][] map, int row, int col, int shipSize)
     {
         final int FACTOR = 2;
@@ -105,11 +118,12 @@ public class BattleShipBot {
         {
             if(guesses[row][col + j] == 'X')
             {
+                //Don't go past the edges
                 if(col + j == 0)
                 {
                     map[row][col + 1] *= FACTOR;
                 }
-                else if(col + j > guesses[row].length)
+                else if(col + j == guesses[row].length - 1)
                 {
                     map[row][col + j - 1] *= FACTOR;
                 }
@@ -118,10 +132,12 @@ public class BattleShipBot {
                     map[row][col + j - 1] *= FACTOR;
                     map[row][col + j + 1] *= FACTOR;
                 }
+                //Zero the hit cell
                 map[row][col + j] = 0;
             }
         }
     }
+    //Weights the cells around a hit in a column by FACTOR.
     private static void hitCol(char[][] guesses, int[][] map, int row, int col, int shipSize)
     {
         final int FACTOR = 2;
@@ -129,11 +145,12 @@ public class BattleShipBot {
         {
             if(guesses[row + j][col] == 'X')
             {
+                //Don't go past the edges 
                 if(row + j == 0)
                 {
                     map[row + 1][col] *= FACTOR;
                 }
-                else if(row + j > guesses[row].length)
+                else if(row + j == guesses.length - 1)
                 {
                     map[row + j - 1][col] *= FACTOR;
                 }
@@ -142,6 +159,7 @@ public class BattleShipBot {
                     map[row + j - 1][col] *= FACTOR;
                     map[row + j + 1][col] *= FACTOR;
                 }
+                //Zero the hit cell
                 map[row + j][col] = 0;
             }
         }
@@ -190,33 +208,7 @@ public class BattleShipBot {
         }
         return new boolean[] {freeCellCount == shipSize, hitsNearby};
     }
-    private static String huntingShot(char[][] guesses)
-    {
-        String guess = "";
-        char row = 'A';
-        int col = 1;
-        //Check every odd parity cell for hits
-        for(int i = 0; i < guesses.length; i++)
-        {
-            for(int j = 0; j < guesses[i].length; j += 2)
-            {
-                if(i % 2 == 0) j++;
-                if(guesses[i][j] == '.')
-                {
-                    row += i;
-                    col +=j;
-                    guess += (char)row + col;
-                    return guess;
-                }
-            }
-        }
-        return guess;
-    }
-    private static String targetShot(char[][] guesses, int row, int col)
-    {
-
-        return "B5";
-    }
+    //Method to show the state of probMap
     public static void showBoard(int[][] probMap)
     {
         System.out.println("    1   2   3   4   5   6   7   8   9   10");
@@ -232,6 +224,7 @@ public class BattleShipBot {
             System.out.println(line);
         }
     }
+    //Method to show the state of the shotsFired board
     public static void showBoard(char[][] shotsFired)
     {
         System.out.println("    1   2   3   4   5   6   7   8   9   10");
